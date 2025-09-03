@@ -20,7 +20,6 @@ export function useDiscounts() {
     }
   };
 
-  // Tambah diskon baru
   const addDiskon = async (data) => {
     loading.value = true;
     error.value = null;
@@ -35,7 +34,6 @@ export function useDiscounts() {
     }
   };
 
-  // Update diskon
   const updateDiskon = async (id, data) => {
     loading.value = true;
     error.value = null;
@@ -50,7 +48,6 @@ export function useDiscounts() {
     }
   };
 
-  // Hapus diskon
   const deleteDiskon = async (id) => {
     loading.value = true;
     error.value = null;

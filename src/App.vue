@@ -1,9 +1,7 @@
 <template>
   <v-app>
     <v-container>
-      <!-- Header -->
       <div class="d-flex justify-space-between align-center mb-4">
-        <!-- Judul Kiri -->
         <div class="d-flex flex-column">
           <h2 class="font-weight-bold mb-1">Daftar Diskon</h2>
           <span
@@ -14,7 +12,7 @@
           </span>
         </div>
 
-        <div class="d-flex align-center">
+        <div class="d-flex align-center" v-if="filteredDiscounts?.length > 0">
           <template v-if="selected.length > 0">
             <v-btn
               variant="outlined"
@@ -49,13 +47,9 @@
           </template>
         </div>
       </div>
-      <!-- Search, Filter & Button in one row -->
-      <div
-        v-if="filteredDiscounts?.length > 0"
-        class="d-flex align-center justify-space-between mb-8 gap-4"
-      >
+
+      <div class="d-flex align-center justify-space-between mb-8 gap-4">
         <div class="d-flex align-center gap-5">
-          <!-- Search -->
           <v-text-field
             v-model="search"
             placeholder="Cari diskon"
@@ -66,7 +60,6 @@
             class="search-input me-4"
           />
 
-          <!-- Outlet Select -->
           <v-select
             v-model="selectedOutlet"
             :items="outlets"
@@ -78,30 +71,8 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <v-card v-else class="pa-8 text-center" outlined>
-        <v-img
-          src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
-          max-width="180"
-          class="mx-auto mb-4"
-        />
-        <h3 class="mb-2">Belum Ada Diskon</h3>
-        <p class="text-grey mb-4">
-          Silahkan tambah diskon untuk menarik pelanggan dan meningkatkan
-          penjualan.
-        </p>
-        <v-btn
-          color="success"
-          prepend-icon="mdi-plus"
-          @click="openDialog()"
-          class="btn-add"
-        >
-          Tambah diskon
-        </v-btn>
-      </v-card>
-
-      <!-- Table -->
       <v-data-table
+        v-if="diskons.length > 0"
         :headers="headers"
         :items="filteredDiscounts"
         item-value="_id"
@@ -110,6 +81,7 @@
         v-model="selected"
         :items-per-page="itemsPerPage"
         class="elevation-0 custom-table"
+        no-data-text="Tidak ditemukan data yang cocok"
       >
         <template
           v-slot:[headers.nama]="{ column, toggleSort, isSorted, sortBy }"
@@ -152,12 +124,10 @@
           </div>
         </template>
 
-        <!-- Kolom Nilai Diskon -->
         <template v-slot:[`item.nilai`]="{ item }">
           <span>{{ item?.nilai ?? 0 }}</span>
         </template>
 
-        <!-- Kolom Aksi -->
         <template v-slot:[`item.actions`]="{ item }">
           <v-icon
             size="small"
@@ -168,13 +138,16 @@
             mdi-pencil
           </v-icon>
         </template>
+        <template #no-data>
+          <div class="text-center text-gray py-4">
+            Tidak ditemukan data yang cocok
+          </div>
+        </template>
 
-        <!-- Custom Footer -->
         <template #bottom>
           <div
             class="d-flex justify-space-between align-center pa-3 table-footer"
           >
-            <!-- Dropdown + teks -->
             <div class="d-flex align-center">
               <v-select
                 v-model="itemsPerPage"
@@ -187,7 +160,6 @@
               <span class="ml-2 text-body-2">data per halaman</span>
             </div>
 
-            <!-- Pagination -->
             <v-pagination
               v-model="page"
               :length="pageCount"
@@ -201,10 +173,25 @@
         </template>
       </v-data-table>
 
-      <!-- Tambah diskon -->
+      <v-card v-else class="pa-8 text-center" outlined>
+        <v-img src="./assets/diskon.png" max-width="180" class="mx-auto mb-4" />
+        <h3 class="mb-2">Belum Ada Diskon</h3>
+        <p class="text-gray mb-2">
+          Silahkan tambah diskon untuk menarik pelanggan dan meningkatkan
+          penjualan.
+        </p>
+        <v-btn
+          color="success"
+          prepend-icon="mdi-plus"
+          @click="openDialog()"
+          class="btn-add"
+        >
+          Tambah diskon
+        </v-btn>
+      </v-card>
+
       <v-dialog v-model="dialog" max-width="500">
         <v-card class="rounded-xl">
-          <!-- Title + Close -->
           <v-card-title class="d-flex justify-space-between align-center">
             <span class="text-h6 font-weight-bold">
               {{ editedIndex === -1 ? "Tambah Diskon" : "Edit Diskon" }}
@@ -225,11 +212,10 @@
               variant="outlined"
               density="comfortable"
               class="mb-4"
+              :error-messages="errors.nama"
             />
 
-            <!-- Diskon + Pilihan Tipe sejajar -->
             <v-row class="mb-4" align="center" dense>
-              <!-- Input angka -->
               <v-col cols="7">
                 <v-text-field
                   v-model="editedItem.nilai"
@@ -239,6 +225,7 @@
                   density="comfortable"
                   class="d-flex align-center"
                   style="height: 40px"
+                  :error-messages="errors.nilai"
                 >
                   <template #append-inner>
                     <span class="append-text">
@@ -248,7 +235,6 @@
                 </v-text-field>
               </v-col>
 
-              <!-- Toggle tipe diskon -->
               <v-col cols="5">
                 <v-btn-toggle
                   v-model="editedItem.tipe"
@@ -300,7 +286,6 @@
             </v-row>
           </v-card-text>
 
-          <!-- Tombol Simpan -->
           <v-card-actions>
             <v-btn
               block
@@ -315,7 +300,6 @@
         </v-card>
       </v-dialog>
 
-      <!-- Dialog Konfirmasi -->
       <v-dialog v-model="confirmDialog" max-width="480">
         <v-card class="rounded-xl">
           <v-card-title class="text-h6 font-weight-bold">
@@ -341,7 +325,6 @@
         </v-card>
       </v-dialog>
 
-      <!-- Snackbar Alert -->
       <v-snackbar
         v-model="snackbar"
         :timeout="3000"
@@ -351,7 +334,6 @@
         <div>{{ deletedName }} berhasil dihapus.</div>
       </v-snackbar>
 
-      <!-- Footer -->
       <div class="text-left mt-8 text-grey text-body-2">
         2024 © PT Nusantara Berkah Digital
       </div>
@@ -371,6 +353,11 @@ const {
   updateDiskon,
   deleteDiskon,
 } = useDiscounts();
+
+const errors = reactive({
+  nama: "",
+  nilai: "",
+});
 
 const search = ref("");
 const selectedOutlet = ref("Kopi Anak Bangsa");
@@ -424,19 +411,58 @@ function closeDialog() {
   dialog.value = false;
 }
 
-async function saveDiscount() {
-  if (isEdit.value && editedItem._id) {
-    await updateDiskon(editedItem._id, editedItem);
-  } else {
-    await addDiskon({ ...editedItem, createdAt: new Date().toISOString() });
+function validateForm() {
+  errors.nama = "";
+  errors.nilai = "";
+
+  if (!editedItem.nama || !editedItem.nama.trim()) {
+    errors.nama = "Nama diskon tidak boleh kosong";
+    return false;
   }
+
+  const duplicate = diskons.value.find(
+    (d) =>
+      d.nama.toLowerCase() === editedItem.nama.toLowerCase() &&
+      d._id !== editedItem._id
+  );
+  if (duplicate) {
+    errors.nama = "Nama diskon sudah digunakan";
+    return false;
+  }
+
+  if (!editedItem.nilai || Number(editedItem.nilai) <= 0) {
+    errors.nilai = "Nilai diskon harus lebih dari 0";
+    return false;
+  }
+
+  return true;
+}
+
+async function saveDiscount() {
+  if (!validateForm()) {
+    return;
+  }
+
+  const payload = {
+    nama: editedItem.nama,
+    tipe: editedItem.tipe,
+    nilai: Number(editedItem.nilai),
+    outlet: editedItem.outlet,
+    createdAt: new Date().toISOString(),
+  };
+
+  if (isEdit.value && editedItem._id) {
+    await updateDiskon(editedItem._id, payload);
+  } else {
+    await addDiskon(payload);
+  }
+
   dialog.value = false;
   resetForm();
 }
 
 function resetForm() {
   Object.assign(editedItem, {
-    _id: null,
     nama: "",
     tipe: "persen",
     nilai: 0,
@@ -465,7 +491,7 @@ function clearSelection() {
 const filteredDiscounts = computed(() => {
   const all = diskons.value || [];
   return all
-    .filter((d) => d && d.nama) // pastikan ada object dan ada properti nama
+    .filter((d) => d && d.nama)
     .filter((d) => d.nama.toLowerCase().includes(search.value.toLowerCase()))
     .filter((d) => !selectedOutlet.value || d.outlet === selectedOutlet.value)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -485,14 +511,13 @@ onMounted(() => {
   border-radius: 28px !important;
   width: 284px !important;
   height: 40px !important;
-  border: 1.5px solid #9e9e9e !important; /* abu-abu */
+  border: 1.5px solid #9e9e9e !important;
   font-size: 14px;
 }
 .search-input :deep(.v-field__prepend-inner) {
-  margin-left: 8px; /* majuin dikit biar gak terlalu nempel */
+  margin-left: 8px;
 }
 
-/* Outlet Select */
 .outlet-select :deep(.v-field) {
   border-radius: 12px !important;
   width: 211px !important;
@@ -500,7 +525,6 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* Button Tambah Diskon */
 .btn-add {
   border-radius: 20px !important;
   min-width: 164px;
@@ -513,7 +537,7 @@ onMounted(() => {
 }
 
 .btn-active {
-  background-color: #e8f5e9 !important; /* hijau muda */
+  background-color: #e8f5e9 !important;
   color: #2e7d32 !important;
   border: 1.5px solid #2e7d32 !important;
   font-weight: 600;
@@ -531,7 +555,6 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* Hilangkan border default */
 :deep(.custom-table .v-data-table__td) {
   border-bottom: none !important;
 }
@@ -540,42 +563,32 @@ onMounted(() => {
 :deep(.custom-table tbody tr:hover) {
   background-color: #fafafa !important;
 }
-/* default abu */
+
 :deep(.v-data-table .v-selection-control .mdi-checkbox-blank-outline) {
   color: #9e9e9e !important;
 }
 
-/* pas dicentang jadi hijau */
 :deep(.v-data-table .v-selection-control .mdi-checkbox-marked) {
   color: #2e7d32 !important;
 }
 
-/* Border luar table */
 :deep(.custom-table) {
   border: 1px solid #e0e0e0 !important;
   border-radius: 12px;
-  overflow: hidden; /* biar border radius kepake */
+  overflow: hidden;
 }
 
-/* Header dan cell pakai border bawah */
-:deep(.custom-table .v-data-table__th),
-:deep(.custom-table .v-data-table__td) {
-  border-bottom: 1px solid #e0e0e0 !important;
-}
-
-/* Hapus semua border kanan/kiri */
 :deep(.custom-table .v-data-table__th),
 :deep(.custom-table .v-data-table__td) {
   border-right: none !important;
   border-left: none !important;
+  border-bottom: 1px solid #e0e0e0 !important;
 }
 
-/* Hilangkan border bawah di baris terakhir */
 :deep(.custom-table tbody tr:last-child .v-data-table__td) {
   border-bottom: none !important;
 }
 
-/* Footer background + border */
 .table-footer {
   border-top: 1px solid #e0e0e0;
   background-color: #fff;
@@ -583,7 +596,6 @@ onMounted(() => {
   border-bottom-right-radius: 12px;
 }
 
-/* Select kecil */
 .items-per-page-select :deep(.v-field) {
   border-radius: 8px;
   height: 32px !important;
@@ -592,7 +604,6 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* Pagination bulat */
 :deep(.custom-pagination .v-pagination__item) {
   border-radius: 50% !important;
   min-width: 32px;
@@ -601,50 +612,45 @@ onMounted(() => {
   color: #424242 !important;
 }
 
-/* Active page hijau */
 :deep(.custom-pagination .v-pagination__item--active) {
   background-color: #2e7d32 !important;
   color: #fff !important;
   font-weight: 600;
 }
 
-/* Selalu tampilkan icon sort di header table */
 :deep(.v-data-table_th .v-data-table-header_sort) {
   opacity: 1 !important;
   visibility: visible !important;
-  transform: none !important; /* hilangkan animasi sembunyi */
+  transform: none !important;
 }
-/* Biar icon sort di header table selalu kelihatan */
+
 :deep(.v-data-table_th .v-data-table-header_sort-icon) {
   opacity: 1 !important;
   visibility: visible !important;
   transform: none !important;
 }
 
-/* Ganti icon sort khusus kolom Nilai Diskon */
 :deep(th[data-column-key="nilai"] .v-data-table-header__sort-icon i::before) {
   font-family: "Material Design Icons";
-  content: "\F0F0C"; /* unicode untuk mdi-unfold-more-vertical */
+  content: "\F0F0C";
 }
 
 :deep(th[data-column-key="nilai"] .v-data-table-header__sort-icon i::before) {
-  content: "\F0D9F"; /* kode unicode mdi-swap-vertical */
+  content: "\F0D9F";
 }
 .custom-btn {
-  text-transform: none !important; /* bukan uppercase */
+  text-transform: none !important;
   font-size: 14px;
   padding: 6px 16px;
-  border-radius: 12px !important; /* biar lebih soft */
+  border-radius: 12px !important;
   font-weight: 500;
 }
 
-/* Tombol hapus - merah cerah aesthetic */
 .red-btn {
-  background-color: #ff3553 !important; /* merah cerah */
+  background-color: #ff3553 !important;
   color: white !important;
 }
 
-/* Tombol batal - border merah cerah */
 .red-outline-btn {
   border: 1.5px solid #ff3553 !important;
   color: #ff3553 !important;
