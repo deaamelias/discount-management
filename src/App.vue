@@ -330,7 +330,7 @@
 
       <v-snackbar
         v-model="snackbar"
-        :timeout="3000"
+        :timeout="4000"
         location="top"
         color="success"
       >
