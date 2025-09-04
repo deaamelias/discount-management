@@ -194,7 +194,7 @@
         <v-card class="rounded-xl">
           <v-card-title class="d-flex justify-space-between align-center">
             <span class="text-h6 font-weight-bold">
-              {{ editedIndex === -1 ? "Tambah Diskon" : "Edit Diskon" }}
+              {{ editedIndex === -1 ? "Tambah Diskon" : "Ubah Diskon" }}
             </span>
             <v-btn
               icon="mdi-close"
