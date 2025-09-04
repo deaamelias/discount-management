@@ -70,9 +70,11 @@
           />
         </div>
       </div>
-
+      <div v-if="loading" class="text-center py-8">
+        <v-progress-circular indeterminate color="success" size="48" />
+      </div>
       <v-data-table
-        v-if="diskons.length > 0"
+        v-else-if="filteredDiscounts.length > 0"
         :headers="headers"
         :items="filteredDiscounts"
         item-value="_id"
@@ -194,8 +196,9 @@
         <v-card class="rounded-xl">
           <v-card-title class="d-flex justify-space-between align-center">
             <span class="text-h6 font-weight-bold">
-              {{ editedIndex === -1 ? "Tambah Diskon" : "Ubah Diskon" }}
+              {{ isEdit ? "Ubah Diskon" : "Tambah Diskon" }}
             </span>
+
             <v-btn
               icon="mdi-close"
               variant="text"
